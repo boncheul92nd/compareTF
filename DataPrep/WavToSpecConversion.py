@@ -318,7 +318,7 @@ def esc50Spect2logFreqSpect(topdir, outdir, srate, fftSize, fftHop, lowRow=1, ne
 
 
 # wav2Spect(K_WAVEDIR, K_SPECTDIR, K_DUR, K_SR, K_FFTSIZE, K_HOP, transform, neww=K_SCALEW, newh=K_SCALEH)
-dirs2labelfile(K_SPECTDIR + '_png/1', main_dir + '/lables.txt')
+dirs2labelfile(K_SPECTDIR + '_png/1', main_dir + '/labels.txt')
 
 # Probably
 # if (K_SCALEH != None):
