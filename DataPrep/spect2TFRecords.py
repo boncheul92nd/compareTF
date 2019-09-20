@@ -122,5 +122,9 @@ tf.app.flags.DEFINE_string('labels_file', 'labels.txt', 'Labels file')
 
 FLAGS = tf.app.flags.FLAGS
 
-
+def _int64_feature(value):
+    """ Wrapper for inserting int64 feature into Example proto. """
+    if not isinstance(value, list):
+        value = [value]
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
