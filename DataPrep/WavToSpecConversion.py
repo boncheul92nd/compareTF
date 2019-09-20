@@ -315,7 +315,15 @@ def esc50Spect2logFreqSpect(topdir, outdir, srate, fftSize, fftHop, lowRow=1, ne
     print('COMPLETE')
 
 
-wav2Spect(K_WAVEDIR, K_SPECTDIR, K_DUR, K_SR, K_FFTSIZE, K_HOP, transform, neww=K_SCALEW, newh=K_SCALEH)
 
-# output human readable class labels into text file (required for TFRecords)
+
+# wav2Spect(K_WAVEDIR, K_SPECTDIR, K_DUR, K_SR, K_FFTSIZE, K_HOP, transform, neww=K_SCALEW, newh=K_SCALEH)
 dirs2labelfile(K_SPECTDIR + '_png/1', main_dir + '/lables.txt')
+
+# Probably
+# if (K_SCALEH != None):
+#     K_QSPECTDIR = K_QSPECTDIR + '.' + str(K_SCALEH)
+# if (K_SCALEW != None):
+#     K_QSPECTDIR = K_QSPECTDIR + '.' + str(K_SCALEW)
+#
+# esc50Spect2logFreqSpect(K_SPECTDIR + '_png', K_QSPECTDIR, K_SR, K_FFTSIZE, K_HOP, lowRow=10)
