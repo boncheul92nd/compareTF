@@ -4,26 +4,22 @@ import os
 # pass some user input as flags
 FLAGS = None
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='stft_small_png')
+parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='stft_png')
 parser.add_argument('--fold', type=int, help='fold used as test set for k-fold cross validation', default=1)
 parser.add_argument('--freqorientation', type=str, help='convolution over 1D or 2D. If 1D freq bins treated as channels, if 2D freq bins is the height of input', default='2D')
-parser.add_argument('--model', type=str, help='load the model to train', default='model1') 
-
-parser.add_argument('--freqbins', type=int, help='number of frequency bins in the spectrogram input', default=513) 
-parser.add_argument('--numFrames', type=int, help='number of frames in the spectrogram input (must be divisible by 4)', default=424) 
-
+parser.add_argument('--model', type=str, help='load the model to train', default='model1')
+parser.add_argument('--freqbins', type=int, help='number of frequency bins in the spectrogram input', default=513)
+parser.add_argument('--numFrames', type=int, help='number of frames in the spectrogram input (must be divisible by 4)', default=424)
 parser.add_argument('--batchsize', type=int, help='number of data records per training batch', default=20) #default for testing
 parser.add_argument('--n_epochs', type=int, help='number of epochs to use for training', default=8) #default for testing
-
 parser.add_argument('--l1channels', type=int, help='Number of channels in the first convolutional layer', default=24) #default for testing
 parser.add_argument('--l2channels', type=int, help='Number of channels in the second convolutional layer (ignored if numconvlayers is 1)', default=48) #default for testing
 parser.add_argument('--l3channels', type=int, help='Number of channels in the second convolutional layer (ignored if numconvlayers is 1)', default=96) #default for testing
 parser.add_argument('--fcsize', type=int, help='Dimension of the final fully-connected layer', default=400) #default for testing
-
-parser.add_argument('--numLabels', type=int, help='number of classes in data', choices=[2,50], default=50) 
+parser.add_argument('--numLabels', type=int, help='number of classes in data', choices=[2,50], default=50)
 parser.add_argument('--filesPerFold', type=int, help='number of classes in data', choices=[2,400], default=400) #default for testing
 
-parser.add_argument('--save_path', type=str, help='output root directory for logging',  default='../Results') 
+parser.add_argument('--save_path', type=str, help='output root directory for logging',  default='../Results')
 
 FLAGS, unparsed = parser.parse_known_args()
 print('\n FLAGS parsed :  {0}'.format(FLAGS))
@@ -34,12 +30,6 @@ dataset_name = "ESC50" #supports ESC50 and US8K
 TRAINING_FOLDS = 4
 
 STFT_dataset_path = "../DataPrep/" + FLAGS.datafolder
-
-#STFT_dataset_path = "C:/Users/Huz/Documents/python_scripts/comparing_TF_representations/compare_TF_rep/DataPrep/stft"
-#CQT_dataset_path = "C:/Users/Huz/Documents/python_scripts/Comparing_TF_representations/US8K/data/2/cqt"
-#MEL_dataset_path = "C:/Users/Huz/Documents/python_scripts/Comparing_TF_representations/US8K/data/2/mel"
-#WAVE_dataset_path = "C:/Users/Huz/Documents/python_scripts/Comparing_TF_representations/ESC50/data/1/wavelet"
-#MFCC_dataset_path = "C:/Users/Huz/Documents/python_scripts/Comparing_TF_representations/ESC50/data/1/mfcc"
 
 INDIR = STFT_dataset_path
 save_path = FLAGS.save_path #path to save output
@@ -59,11 +49,11 @@ if FRE_ORIENTATION in ["2D","1D"]:
 else:
     raise ValueError("please only enter '1D' or '2D'")
 if FRE_ORIENTATION == "1D" :
-	NUM_CHANNELS = K_FREQBINS #no of image channels
+	NUM_CHANNELS = K_FREQBINS # no of image channels
 	K_HEIGHT =1
 	print("orientation is 1D, so setting NUM_CHANNELS to " + str(K_FREQBINS))
 else :
-	NUM_CHANNELS = 1 #no of image channels
+	NUM_CHANNELS = 1 # no of image channels
 	K_HEIGHT = K_FREQBINS
 	print("orientation is 2D, so setting NUM_CHANNELS to " + str(1))
 

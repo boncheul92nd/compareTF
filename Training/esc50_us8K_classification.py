@@ -1,10 +1,10 @@
-import numpy as np
 import os
-import re
+os.environ["CUDA_DIVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
+
 import tensorflow as tf
 import time
 from datetime import datetime
-import matplotlib.pyplot as plt
 import importlib
 
 from params import *
@@ -26,21 +26,21 @@ def time_taken(elapsed):
 # Create list of paramters for serializing so that network can be properly reconstructed, and for documentation purposes
 ##*************************************
 parameters={
-    'k_height' : m.k_height, 
-    'k_numFrames' : K_NUMFRAMES, 
-    'k_inputChannels' : m.k_inputChannels, 
-    'K_NUMCONVLAYERS' : m.K_NUMCONVLAYERS, 
-    'L1_CHANNELS' : L1_CHANNELS, 
+    'k_height' : m.k_height,
+    'k_numFrames' : K_NUMFRAMES,
+    'k_inputChannels' : m.k_inputChannels,
+    'K_NUMCONVLAYERS' : m.K_NUMCONVLAYERS,
+    'L1_CHANNELS' : L1_CHANNELS,
     'L2_CHANNELS' : L2_CHANNELS,
-    'L3_CHANNELS' : L3_CHANNELS, 
-    'FC_SIZE' : FC_SIZE, 
-    'K_ConvRows' : m.k_ConvRows, 
-    'K_ConvCols' : m.k_ConvCols, 
-    'k_ConvStrideRows' : m.k_ConvStrideRows, 
-    'k_ConvStrideCols' : m.k_ConvStrideCols, 
-    'k_poolRows' : m.k_poolRows, 
-    'k_poolStrideRows' : m.k_poolStrideRows, 
-    'k_downsampledHeight' : m.k_downsampledHeight, 
+    'L3_CHANNELS' : L3_CHANNELS,
+    'FC_SIZE' : FC_SIZE,
+    'K_ConvRows' : m.k_ConvRows,
+    'K_ConvCols' : m.k_ConvCols,
+    'k_ConvStrideRows' : m.k_ConvStrideRows,
+    'k_ConvStrideCols' : m.k_ConvStrideCols,
+    'k_poolRows' : m.k_poolRows,
+    'k_poolStrideRows' : m.k_poolStrideRows,
+    'k_downsampledHeight' : m.k_downsampledHeight,
     'k_downsampledWidth' : m.k_downsampledWidth,
     'freqorientation' : FRE_ORIENTATION,
     'transform' : FLAGS.datafolder
@@ -179,7 +179,9 @@ print('*** Initializing fold #%u as test set ***' % fold)
 writer = tf.summary.FileWriter(filewriter_path + str(fold))
 
 def trainModel():
-    with tf.Session() as sess:
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
 
         # Initialize all variables        
         sess.run(tf.group(tf.global_variables_initializer(), tf.local_variables_initializer()))
@@ -321,7 +323,6 @@ def trainModel():
         #print("Total time taken:",time_taken(elapsed_time_long))
         text_file.close()
         
-        print(' ===============================================================') 
-
+        print(' ===============================================================')
 # Do it
 trainModel()

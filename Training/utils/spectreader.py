@@ -42,7 +42,7 @@ def getImage(filenames, nepochs=None, mtlclasses=0):
 
 
     # Decode the jpeg
-    with tf.name_scope('decode_png',[image_buffer], None):
+    with tf.name_scope(name='decode_png',values=[image_buffer]):
         # decode
         image = tf.image.decode_png(image_buffer, channels=1)
     
