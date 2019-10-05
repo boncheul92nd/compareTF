@@ -7,18 +7,18 @@ import numpy as np
 import time
 from datetime import datetime
 import importlib
-from Training.parameters import *
+from parameters import *
 m = importlib.import_module(FLAGS.model) #import CNN model
-import Training.utils.pickledModel as picledModel
-import Training.utils.spectreader as spectreader
+import utils.pickledModel as picledModel
+import utils.spectreader as spectreader
 
 
 # some utility functions
 def time_taken(elapsed):
-    """ To format time taken in hh:mm:ss. Use with time.monotic() """
+    """To format time taken in hh:mm:ss. Use with time.monotic()"""
     m, s = divmod(elapsed, 60)
     h, m = divmod(m, 60)
-    return "%d:%02d:%02d" & (h, m, s)
+    return "%d:%02d:%02d" % (h, m, s)
 
 # function to save/load numpy array to/from file
 def save_set(sets, name):
@@ -41,7 +41,7 @@ def load_set(sets):
     return np.load('{}.npy'.format(sets))
 
 if FRE_ORIENTATION is "2D":
-    K_height = K_FREQBINS
+    k_height = K_FREQBINS
     k_input_chhannels = 1
 elif FRE_ORIENTATION is "1D":
     k_height = 1
@@ -94,9 +94,11 @@ def get_TFR_folds(a_dir, foldnumlist):
     """
     lis = []
     for num in foldnumlist:
-        lis.extend([
-            a_dir + '/' + name for name in os.listdir(a_dir) if name.startswith("fold" + str(num))
-        ])
+        lis.extend(
+            [
+                a_dir + '/' + name for name in os.listdir(a_dir)if name.startswith("fold" + str(num))
+            ]
+        )
     return lis
 
 # Path for tf.summary.FileWriter and to store model checkpoints
@@ -148,7 +150,7 @@ with tf.name_scope("accuracy"):
     accuracy = 100 * tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
 # Add the accuracy to the summary
-tf.summary.scalar('accuracy'. accuracy)
+tf.summary.scalar('accuracy', accuracy)
 
 # Merge all summaries together
 merged_summary = tf.summary.merge_all()
@@ -159,9 +161,9 @@ saver = tf.train.Saver()
 NUM_THREADS = 4
 foldlist = [1, 2, 3, 4, 5]
 max_acc = []
-max_epoch = []
+max_epochs = []
 
-start_time_log = time.monotonic()
+start_time_long = time.monotonic()
 text_file = open(save_path + "/stft-double_v2.txt", "w")    # Save training data
 print("{} Open Tensorboard at --logdir {}".format(datetime.now(), filewriter_path))
 
@@ -173,7 +175,7 @@ for fold in foldlist:
     validatenumlist = [fold]
 
     datafnames = get_TFR_folds(INDIR, datanumlist)
-    target, data = getImage(datafnames, FRE_ORIENTATION, nepochs=EPOCHS)
+    target, data = getImage(datafnames, FRE_ORIENTATION, n_epochs=EPOCHS)
 
     validatefnames = get_TFR_folds(INDIR, validatenumlist)
     vtarget, vdata = getImage(validatefnames, FRE_ORIENTATION)
@@ -204,3 +206,98 @@ for fold in foldlist:
     writer = tf.summary.FileWriter(filewriter_path + str(fold))
 
     gpu_options = tf.GPUOptions(allow_growth=True)
+    config = tf.ConfigProto(gpu_options=gpu_options)
+    with tf.Session(config=config) as sess:
+
+        # Initialize all variables
+        sess.run(tf.group(tf.global_variables_initializer(), tf.local_variables_initializer()))
+        # Add the model graph to TensorBoard
+        writer.add_graph(sess.graph)
+
+        coord = tf.train.Coordinator()
+        enqueue_threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+        print("{} Start training...".format(datetime.now()))
+        start_time = time.monotonic()
+
+        try:
+            if coord.should_stop():
+                print("coord should stop")
+
+            e = 1
+            step = 1
+            print("{} Epoch number: {}".format(datetime.now(), e))
+
+            while True: # For each mini-batch until data runs out after specified number of epochs
+                if coord.should_stop():
+                    print("data feed done, quitting")
+                    break
+
+                # Create training mini-batch here
+                batch_data, batch_labels = sess.run([imageBatch, labelBatch])
+                # Train and backprop
+                sess.run(optimizer, feed_dict={x:batch_data, y:batch_labels, keep_prob:dropout})
+
+                if (step % display_step == 0):
+                    s = sess.run(merged_summary, feed_dict={x:batch_data, y:batch_labels, keep_prob: 1.})
+                    writer.add_summary(s, step)
+
+                if (step % test_N_steps == 0):
+                    test_acc = 0.
+                    test_count = 0
+
+                    for j in range(test_batches_per_epoch):
+                        try:
+                            # Prepare test mini-batch
+                            test_batch, label_batch = sess.run([vimageBatch, vlabelBatch])
+
+                            acc = sess.run(accuracy, feed_dict={x: test_batch, y:label_batch, keep_prob: 1.})
+                            test_acc += acc * BATCH_SIZE
+                            test_count += 1 * BATCH_SIZE
+                        except (Exception) as ex:
+                            print(ex)
+                    # Calculate total test accuracy
+                    test_acc /= test_count
+                    print("{} Test Accuracy = {:.4f}".format(datetime.now(), test_acc))
+                    text_file.write("{} Test Accuracy = {:.4f}\n".format(datetime.now(), test_acc))
+                    test_acc_list.append(test_acc)
+
+                if (step % train_batches_per_epoch == 0):
+                    e += 1
+                    print("{} Epoch number: {}".format(datetime.now(), e))
+                    # Save checkpoint of the model
+                    if (e % checkpoint_epoch == 0):
+                        checkpoint_name = os.path.join(checkpoint_path, dataset_name + 'model_fold' + str(fold) + '_epoch' + str(e) + '.ckpt')
+                        saver.save(sess, checkpoint_name)
+                        print("{} Model checkpoint saved at {}".format(datetime.now(), checkpoint_name))
+                step += 1
+
+        except (tf.errors.OutOfRangeError) as ex:
+            coord.request_stop(ex)
+        finally:
+            coord.request_stop()
+            coord.join(enqueue_threads)
+
+        # Find the max test score and the epoch it belons to
+        max_acc.append(max(test_acc_list))
+        max_epoch = test_acc_list.index(max(test_acc_list)) + 1
+        max_epochs.append(max_epoch)
+
+        elapsed_time = time.monotonic() - start_time
+        print(elapsed_time)
+        text_file.write("--- Training time taken: {} ---\n".format(time_taken(elapsed_time)))
+        print("--- Training time taken: ", time_taken(elapsed_time), "---")
+        print("------------------------")
+
+        # Return the max accuracies of each fold and their respective epochs
+        print(max_acc)
+        print(max_epochs)
+
+    sess.close()
+writer.close()
+elapsed_time_long = time.monotonic() - start_time_long
+print("*** All runs completed ***")
+text_file.write("Total time taken:")
+text_file.write(time_taken(elapsed_time_long))
+print("Total time taken:",time_taken(elapsed_time_long))
+text_file.close()

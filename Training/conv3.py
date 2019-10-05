@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from Training.parameters import *
+from parameters import *
 
 if FRE_ORIENTATION == "2D":
     k_height = K_HEIGHT
@@ -37,11 +37,11 @@ def maxpool2d(x, k_h=k_pool_rows, k_w=4):
     # ksize = [batch, height, width,channels]
     return tf.nn.max_pool(x, ksize=[1, k_h, k_w, 1], strides=[1, k_h, k_w, 1], padding='SAME')
 
-def conv_net(x, weights, biases, dropout):
-    # Convolution layer
-    conv1 = conv2d(x, weights['wc1'], biases['bc1'])
 
-    # Max pooling (down-sampling)
+def conv_net(x, weights, biases, dropout):
+    # Convolution Layer
+    conv1 = conv2d(x, weights['wc1'], biases['bc1'])
+    # Max Pooling (down-sampling)
     conv1 = maxpool2d(conv1)
     conv1 = tf.nn.dropout(conv1, dropout)
 
@@ -50,9 +50,8 @@ def conv_net(x, weights, biases, dropout):
     fc1 = tf.reshape(conv1, [-1, weights['wd1'].get_shape().as_list()[0]])
     fc1 = tf.add(tf.matmul(fc1, weights['wd1']), biases['bd1'])
     fc1 = tf.nn.relu(fc1)
-
-    # Apply dropput
-    fc1 = tf.nn.droput(fc1, dropout)
+    # Apply Dropout
+    fc1 = tf.nn.dropout(fc1, dropout)
 
     # Output, class prediction
     out = tf.add(tf.matmul(fc1, weights['wout']), biases['bout'])

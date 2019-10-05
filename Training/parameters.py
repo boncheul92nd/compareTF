@@ -27,7 +27,7 @@ print('\n FLAGS parsed:  {0}'.format(FLAGS))
 dataset_name = "ESC50"  # supports ESC50 and US8K
 TRAINING_FOLDS = 4
 
-dataset_path = "../DataPrep" + FLAGS.datafolder
+dataset_path = "../DataPrep/" + FLAGS.datafolder
 INDIR = dataset_path
 save_path = FLAGS.save_path # path to save output
 if not os.path.isdir(save_path): os.mkdir(save_path)
