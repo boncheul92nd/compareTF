@@ -9,7 +9,6 @@ from datetime import datetime
 import importlib
 from parameters import *
 m = importlib.import_module(FLAGS.model) #import CNN model
-import utils.pickledModel as picledModel
 import utils.spectreader as spectreader
 
 
@@ -48,25 +47,6 @@ elif FRE_ORIENTATION is "1D":
     k_input_chhannels = K_FREQBINS
 else:
     raise ValueError("please only enter '1D' or '2D'")
-
-# Create list of parameters for serlializing so that network can be properly reconstructed, and for documentation purposes
-parameters = {
-    'k_height'              : k_height,
-    'k_num_frames'          : K_NUMFRAMES,
-    'k_input_channels'      : k_input_chhannels,
-    'k_num_conv_layers'     : m.K_NUM_CONV_LAYERS,
-    'L1_channels'           : L1_CHANNELS,
-    'fc_size'               : FC_SIZE,
-    'k_conv_rows'           : m.k_conv_rows,
-    'k_conv_cols'           : m.k_conv_cols,
-    'k_conv_stride_rows'    : m.K_CONV_STRIDE_ROWS,
-    'k_conv_stride_cols'    : m.K_CONV_STRIDE_COLS,
-    'k_pool_rows'           : m.k_pool_rows,
-    'k_pool_stride_rows'    : m.K_POOL_STRIDE_ROWS,
-    'k_downsampled_height'  : m.k_downsampled_height,
-    'k_downsampled_width'   : m.k_downsampled_width,
-    'freqorientation'       : FRE_ORIENTATION
-}
 
 def getImage(fnames, freq_orientation, n_epochs=None):
     """

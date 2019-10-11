@@ -22,7 +22,7 @@ def getImage(filenames, nepochs=None, mtlclasses=0):
             'image/height': tf.FixedLenFeature([], tf.int64),
             'image/width': tf.FixedLenFeature([], tf.int64),
             'image/colorspace': tf.FixedLenFeature([], dtype=tf.string,default_value=''),
-            'image/channels':  tf.FixedLenFeature([], tf.int64),            
+            'image/channels':  tf.FixedLenFeature([], tf.int64),
             'image/class/label': tf.FixedLenFeature([],tf.int64),
             'image/class/text': tf.FixedLenFeature([], dtype=tf.string,default_value=''),
             'image/class/label_2': tf.FixedLenFeature([],tf.int64, default_value=0),
