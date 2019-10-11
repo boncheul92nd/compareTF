@@ -15,7 +15,7 @@ def scale_image(img, base_width, base_height):
     return img
 
 
-def log_spec_to_png(out_img, fname, scale_width=None, scale_height=None, lwinfo=None):
+def logspec_to_png(out_img, fname, scale_width=None, scale_height=None, lwinfo=None):
 
     info = PngImagePlugin.PngInfo()
     lwinfo = lwinfo or {}
@@ -32,4 +32,7 @@ def log_spec_to_png(out_img, fname, scale_width=None, scale_height=None, lwinfo=
     shift = np.amax(out_img) - np.amin(out_img)
     sc2 = 255 * (out_img - np.amin(out_img)) / shift
     sav_img2 = Image.fromarray(np.flipud(sc2))
+
+    png_img = sav_img2.convert('L')
+    png_img.save(fname, pnginfo=info)
 

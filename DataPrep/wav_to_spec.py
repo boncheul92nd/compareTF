@@ -109,7 +109,7 @@ def wav_to_spec(wav_dir, out_dir, srate, fft_size, fft_hop, trans, scale_width=N
             except:
                 os.makedirs(png_dir)
 
-            png_spec.log_spec_to_png(
+            png_spec.logspec_to_png(
                 out_img=png_dir+'/'+os.path.splitext(fname)[0] + '.png',
                 scale_width=scale_width,
                 scale_height=scale_height
