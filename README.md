@@ -1,6 +1,6 @@
 # Environmental Sound Classification Research
 
-## ESC-50: Dataset for Environmental Sound Classification
+## ESC-50 Dataset
 
 > ###### [Overview](#esc-50-dataset-for-environmental-sound-classification) | [Download](#download) | [Results](#results) | [Repository content](#repository-content) | [License](#license) | [Citing](#citing) | [Caveats](#caveats) | [Changelog](#changelog)
 >
