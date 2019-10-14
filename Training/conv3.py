@@ -75,6 +75,3 @@ biases = {
     'bd1': tf.Variable(tf.constant(1.0, shape=[FC_SIZE]), name='bd1'),
     'bout': tf.Variable(tf.constant(1.0, shape=[N_LABELS]), name='bout')
 }
-
-#Note
-#filter: [filter_height, filter_width, in_channels, out_channels]
