@@ -1,8 +1,8 @@
 import os
 import librosa
 import numpy as np
-import png_spec
-import configuration as exprt_config
+from libs import png_spec
+from configs import configuration as config
 
 class PreProcessor(object):
 
@@ -13,23 +13,23 @@ class PreProcessor(object):
         self._width = scale_width
         self._height = scale_height
         self._transform = trans
-        self._wav_dir = exprt_config.WAV_DIR
+        self._wav_dir = config.WAV_DIR
         self._out_dir = None
 
         if self._transform == 'stft':
-            self._out_dir = exprt_config.MAIN_DIR + 'stft'
+            self._out_dir = config.MAIN_DIR + 'stft'
             if (self._width != None):
                 self._out_dir = self._out_dir + '.' + str(self._width)
             if (self._height != None):
                 self._out_dir = self._out_dir + '.' + str(self._height)
         elif self._transform == 'mel':
-            self._out_dir = exprt_config.MAIN_DIR + 'mel'
+            self._out_dir = config.MAIN_DIR + 'mel'
         elif self._transform == 'cqt':
-            self._out_dir = exprt_config.MAIN_DIR + 'cqt'
+            self._out_dir = config.MAIN_DIR + 'cqt'
         elif self._transform == 'cwt':
-            self._out_dir = exprt_config.MAIN_DIR + 'cwt'
+            self._out_dir = config.MAIN_DIR + 'cwt'
         elif self._transform == 'mfcc':
-            self._out_dir = exprt_config.MAIN_DIR + 'mfcc'
+            self._out_dir = config.MAIN_DIR + 'mfcc'
         else:
             raise ValueError("Transform not supported! Please choose from ['stft','mel','cqt','cwt','mfcc']")
 
