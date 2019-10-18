@@ -3,36 +3,35 @@ from PIL import PngImagePlugin
 import json
 from PIL import Image
 
-def scale_image(img, base_width, base_height):
+def scale_image(img, base_height, base_width):
 
     if (base_width == None):
-        w_percent = (base_height / float(img.size[1]))
-        h_size = int((float(img.size[0]) * float(w_percent)))
+        wpercent = (base_height / float(img.size[1]))
+        h_size = int((float(img.size[0]) * float(wpercent)))
         img = img.resize((h_size, base_height), Image.ANTIALIAS)
     else:
-        img = img.resize((base_width, base_height), Image.ANTIALIAS)
-
+        img = img.resize((base_height, base_width), Image.ANTIALIAS)
     return img
 
 
-def logspec_to_png(out_img, fname, scale_width=None, scale_height=None, lwinfo=None):
+def logspec_to_png(out_img, fname, scale_height=None, scale_width=None, lwinfo=None):
 
     info = PngImagePlugin.PngInfo()
     lwinfo = lwinfo or {}
-    lwinfo['old_min'] = str(np.amin(out_img))
-    lwinfo['old_max'] = str(np.amax(out_img))
-    lwinfo['new_min'] = '0'
-    lwinfo['new_max'] = '255'
+    lwinfo['oldmin'] = str(np.amin(out_img))
+    lwinfo['oldmax'] = str(np.amax(out_img))
+    lwinfo['newmin'] = '0'
+    lwinfo['newmax'] = '255'
     info.add_text('meta', json.dumps(lwinfo))
 
     if scale_height is not None:
-        original_img = Image.fromarray(out_img)
-        out_img = scale_image(original_img, scale_width, scale_height)
+        savimg = Image.fromarray(out_img).transpose(Image.ROTATE_90)
+        outimg = scale_image(savimg, scale_height, scale_width)
 
-    shift = np.amax(out_img) - np.amin(out_img)
-    sc2 = 255 * (out_img - np.amin(out_img)) / shift
-    sav_img2 = Image.fromarray(np.flipud(sc2))
+    shift = np.amax(outimg) - np.amin(outimg)
+    SC2 = 255 * (outimg - np.amin(outimg)) / shift
+    savimg2 = Image.fromarray(np.flipud(SC2))
 
-    png_img = sav_img2.convert('L')
-    png_img.save(fname, pnginfo=info)
+    pngimg = savimg2.convert('L').transpose(Image.ROTATE_90)
+    pngimg.save(fname, pnginfo=info)
 

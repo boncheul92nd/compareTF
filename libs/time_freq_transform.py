@@ -6,32 +6,21 @@ from configs import configuration as config
 
 class PreProcessor(object):
 
-    def __init__(self, srate, fft_size, fft_hop, scale_width, scale_height, trans):
+    def __init__(self, srate, fft_size, fft_hop, scale_height, scale_width, trans, n_mels):
         self._sample_rate = srate
         self._fft_size = fft_size
         self._fft_hop = fft_hop
-        self._width = scale_width
         self._height = scale_height
+        self._width = scale_width
         self._transform = trans
+        self._mel_filterbank = n_mels
         self._wav_dir = config.WAV_DIR
-        self._out_dir = None
-
-        if self._transform == 'stft':
-            self._out_dir = config.MAIN_DIR + 'stft'
-            if (self._width != None):
-                self._out_dir = self._out_dir + '.' + str(self._width)
-            if (self._height != None):
-                self._out_dir = self._out_dir + '.' + str(self._height)
-        elif self._transform == 'mel':
-            self._out_dir = config.MAIN_DIR + 'mel'
-        elif self._transform == 'cqt':
-            self._out_dir = config.MAIN_DIR + 'cqt'
-        elif self._transform == 'cwt':
-            self._out_dir = config.MAIN_DIR + 'cwt'
-        elif self._transform == 'mfcc':
-            self._out_dir = config.MAIN_DIR + 'mfcc'
-        else:
-            raise ValueError("Transform not supported! Please choose from ['stft','mel','cqt','cwt','mfcc']")
+        self._out_dir = config.RES_DIR + self._transform + \
+                        '_' + str(self._height) + 'x' + str(self._width) + \
+                        '_win' + str(self._fft_size) + \
+                        '_hop' + str(self._fft_hop) + \
+                        '_bank' + str(self._mel_filterbank) + \
+                        '_' + str(self._sample_rate//1000) + 'kHz'
 
     def _get_sub_dirs(self, dir):
         return [
@@ -55,7 +44,7 @@ class PreProcessor(object):
     def _esc50_get_fold(self, fname):
         return fname.split('-')[0]
 
-    def _wav_to_mel(self, fname, n_mels=128):
+    def _wav_to_mel(self, fname):
         try:
             audio_data, sample_rate = librosa.load(
                 path=fname,
@@ -72,7 +61,7 @@ class PreProcessor(object):
             sr=sample_rate,
             n_fft=self._fft_size,
             hop_length=self._fft_hop,
-            n_mels=n_mels
+            n_mels=self._mel_filterbank
         )
 
         D = librosa.power_to_db(S=S, ref=np.max)
@@ -115,8 +104,8 @@ class PreProcessor(object):
                 png_spec.logspec_to_png(
                     out_img=D,
                     fname=png_dir + '/' + os.path.splitext(fname)[0] + '.png',
-                    scale_width=self._width,
-                    scale_height=self._height
+                    scale_height=self._height,
+                    scale_width=self._width
                 )
                 print(str(count) + ": " + sub_dir + "/" + os.path.splitext(fname)[0])
                 count += 1
