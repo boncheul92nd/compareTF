@@ -81,9 +81,6 @@ import random
 import sys
 import threading
 
-from PIL import Image
-import math
-
 import numpy as np
 import tensorflow as tf
 
@@ -92,7 +89,7 @@ k_colorspace = 'GrayScale' # https://www.tensorflow.org/api_guides/python/image
 k_channels = 1 # saving songram as 2D GrayScale image for now - try 256 channels later
 k_image_format = 'PNG' # also not used for sonogram TFRecord reading and writing
 
-tf.app.flags.DEFINE_string('main_dir', './res/mel_png',
+tf.app.flags.DEFINE_string('main_dir', '../res/mel_37x50_win32768_hop2048_bank4096_16kHz_png',
                            'Directory that holds all folds')
 
 tf.app.flags.DEFINE_string('fold1_dir', tf.app.flags.FLAGS.main_dir + '/1',

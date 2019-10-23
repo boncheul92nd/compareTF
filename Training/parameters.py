@@ -4,7 +4,7 @@ import os
 # Pass some user input as flags
 FLAGS = None
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='mel_png')
+parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='res/mel_37x50_win32768_hop2048_bank4096_16kHz_png')
 parser.add_argument('--fold', type=int, help='fold used as test set for k-fold cross validation', default=1)
 parser.add_argument('--freqorientation', type=str, help='convolution over 1D or 2D. If 1D, then freq bins treated as channels. If 2D, then freq bins is the height of input', default='2D')
 parser.add_argument('--model', type=str, help='load the model to train', default='conv3')
@@ -27,7 +27,7 @@ print('\n FLAGS parsed:  {0}'.format(FLAGS))
 dataset_name = "ESC50"  # supports ESC50 and US8K
 TRAINING_FOLDS = 4
 
-dataset_path = "../DataPrep/" + FLAGS.datafolder
+dataset_path = "../" + FLAGS.datafolder
 INDIR = dataset_path
 save_path = FLAGS.save_path # path to save output
 if not os.path.isdir(save_path): os.mkdir(save_path)

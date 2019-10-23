@@ -44,7 +44,7 @@ class PreProcessor(object):
     def _esc50_get_fold(self, fname):
         return fname.split('-')[0]
 
-    def _wav_to_mel(self, fname):
+    def _load_audio(self, fname):
         try:
             audio_data, sample_rate = librosa.load(
                 path=fname,
@@ -55,6 +55,29 @@ class PreProcessor(object):
         except:
             print("Can not read " + fname)
             return
+
+        return audio_data, sample_rate
+
+    def _wav_to_stft(self, fname):
+
+        audio_data, _ = self._load_audio(fname)
+
+        D = librosa.stft(
+            y=audio_data,
+            n_fft=self._fft_size,
+            hop_length=self._fft_hop,
+            win_length=self._fft_size,
+            window='hann',
+            center=True
+        )
+        magnitude = np.abs(D)
+        phase = np.angle(D)
+
+        return magnitude, phase
+
+    def _wav_to_mel(self, fname):
+
+        audio_data, sample_rate = self._load_audio(fname)
 
         S = librosa.feature.melspectrogram(
             y=audio_data,
@@ -81,8 +104,8 @@ class PreProcessor(object):
                 fold = self._esc50_get_fold(fname=fname)
 
                 if self._transform == 'stft':
-                    # TODO: STFT method
-                    break
+                    D = self._wav_to_stft(fname=full_paths[idx])
+
                 elif self._transform == 'mel':
                     D = self._wav_to_mel(fname=full_paths[idx])
                 elif self._transform == 'cqt':
@@ -95,6 +118,8 @@ class PreProcessor(object):
                     # TODO: MFCC method
                     break
 
+                # TODO: transform this as class method
+                ########################################################################
                 png_dir = self._out_dir + '_png/' + fold + '/' + sub_dir
                 try:
                     os.stat(png_dir)
@@ -107,6 +132,8 @@ class PreProcessor(object):
                     scale_height=self._height,
                     scale_width=self._width
                 )
+                ########################################################################
+
                 print(str(count) + ": " + sub_dir + "/" + os.path.splitext(fname)[0])
                 count += 1
         print("COMPLETE")
