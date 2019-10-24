@@ -118,7 +118,7 @@ class PreProcessor(object):
                     # TODO: MFCC method
                     break
 
-                # TODO: transform this as class method
+                # TODO: transform code that it's in below's comment box as class method
                 ########################################################################
                 png_dir = self._out_dir + '_png/' + fold + '/' + sub_dir
                 try:
