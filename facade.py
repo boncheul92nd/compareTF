@@ -1,4 +1,5 @@
 from libs.time_freq_transform import PreProcessor
+from libs.specgrams_helper import SpecgramsHelper
 
 def main():
     narrowband = PreProcessor(
@@ -10,7 +11,6 @@ def main():
         trans='mel',
         n_mels=128
     )
-    narrowband.wav_to_spectrogram()
 
     wideband = PreProcessor(
         srate=22050,
@@ -21,10 +21,18 @@ def main():
         trans='mel',
         n_mels=512
     )
-    wideband.wav_to_spectrogram()
 
     del narrowband
     del wideband
+
+    A = SpecgramsHelper(
+        audio_length=64000,
+        spec_shape=(128, 1024),
+        overlap=0.75,
+        sample_rate=16000,
+        mel_downscale=2
+    )
+    del A
 
 if __name__ == "__main__":
     main()

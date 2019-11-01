@@ -5,16 +5,13 @@ import numpy as np
 from libs.time_freq_transform import PreProcessor
 from scipy.spatial.distance import euclidean
 
-def median_absolute_deviation(data):
-    return np.median(np.absolute(data - np.median(data, axis=0)), axis=0)
-
 def main():
     dist_list = []
     wav_path = 'res/X-PROJECT/'
     high_definition = PreProcessor(
         srate=16000,
         fft_size=2048,
-        fft_hop=2048,
+        fft_hop=8,
         scale_height=37,
         scale_width=50,
         trans='mel',
@@ -48,11 +45,10 @@ def main():
         dist = euclidean(original_audio_data, restored_audio_data)
         dist_list.append(dist)
         print(str(idx+1) + ': ' + fname )
-    median = np.median(dist_list)
-    MAD = median_absolute_deviation(dist_list)
-    print(median)
-    print(MAD)
-    print("Median & Median Absolute Deviation(MAD):\t%f±%f" % (median, MAD))
+    mean = np.mean(dist_list)
+    std = np.std(dist_list)
+    print(mean)
+    print(std)
 
 if __name__ == "__main__":
     main()

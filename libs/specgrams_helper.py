@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import spectral_ops
+from libs import spectral_ops
 import numpy as np
 import tensorflow as tf
 
