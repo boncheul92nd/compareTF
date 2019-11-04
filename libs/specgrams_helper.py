@@ -50,6 +50,7 @@ class SpecgramsHelper(object):
         padding = n_samps_inv - self._audio_length
         padding_l = padding
         padding_r = padding - padding_l
+
         return padding_l, padding_r
 
     def waves_to_stfts(self, waves):

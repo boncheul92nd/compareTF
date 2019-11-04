@@ -14,18 +14,10 @@ def scale_image(img, base_height, base_width):
     return img
 
 
-def logspec_to_png(out_img, fname, scale_height=None, scale_width=None, lwinfo=None):
-
-    info = PngImagePlugin.PngInfo()
-    lwinfo = lwinfo or {}
-    lwinfo['oldmin'] = str(np.amin(out_img))
-    lwinfo['oldmax'] = str(np.amax(out_img))
-    lwinfo['newmin'] = '0'
-    lwinfo['newmax'] = '255'
-    info.add_text('meta', json.dumps(lwinfo))
+def logspec_to_png(out_img, fname, scale_height=None, scale_width=None):
 
     if scale_height is not None:
-        savimg = Image.fromarray(out_img).transpose(Image.ROTATE_90)
+        savimg = Image.fromarray(out_img)
         outimg = scale_image(savimg, scale_height, scale_width)
 
     shift = np.amax(outimg) - np.amin(outimg)
@@ -33,5 +25,5 @@ def logspec_to_png(out_img, fname, scale_height=None, scale_width=None, lwinfo=N
     savimg2 = Image.fromarray(np.flipud(SC2))
 
     pngimg = savimg2.convert('L').transpose(Image.ROTATE_90)
-    pngimg.save(fname, pnginfo=info)
-
+    pngimg = pngimg.transpose(Image.FLIP_LEFT_RIGHT)
+    pngimg.save(fname, pnginfo=None)
