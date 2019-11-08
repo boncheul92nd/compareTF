@@ -1,3 +1,21 @@
+"""
+  image/encoded: string containing JPEG encoded image in RGB colorspace
+  image/height: integer, image height in pixels
+  image/width: integer, image width in pixels
+  image/colorspace: string, specifying the colorspace, always 'RGB'
+  image/channels: integer, specifying the number of channels, always 3
+  image/format: string, specifying the format, always'JPEG'
+  image/filename: string containing the basename of the image file
+            e.g. 'n01440764_10026.JPEG' or 'ILSVRC2012_val_00000293.JPEG'
+
+  image/class/label: integer specifying the index in a classification layer.
+    The label ranges from [0, num_labels] where 0 is unused and left as
+    the background class.
+  image/class/text: string specifying the human-readable version of the label
+    e.g. 'dog'
+
+If you data set involves bounding boxes, please look at build_imagenet_data.py.
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -11,11 +29,11 @@ import threading
 import numpy as np
 import tensorflow as tf
 
-k_colorspace = 'GrayScale'  # https://www.tensorflow.org/api_guides/python/image
+k_colorspace = 'GrayScale'
 k_channels = 1  # saving songram as 2D GrayScale image for now - try 256 channels later
 k_image_format = 'PNG'  # also not used for sonogram TFRecord reading and writing
 
-tf.app.flags.DEFINE_string('main_dir', '../res/Mag-Mel+H',
+tf.app.flags.DEFINE_string('main_dir', '../res/IF+H',
                            'Directory that holds all folds')
 
 tf.app.flags.DEFINE_string('fold1_dir', tf.app.flags.FLAGS.main_dir + '/1',
@@ -70,7 +88,7 @@ def _float_feature(value):
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
 
-def _convert_to_example(filename, image_buffer, label, text, height, width):
+def _convert_to_example(filename, image_buffer_ch1, image_buffer_ch2, label, text, height, width):
     """Build an Example proto for an example.
     Args:
       filename: string, path to an image file, e.g., '/path/to/example.JPG'
@@ -82,16 +100,22 @@ def _convert_to_example(filename, image_buffer, label, text, height, width):
     Returns:
       Example proto
     """
-    example = tf.train.Example(features=tf.train.Features(feature={
-        'image/height': _int64_feature(height),
-        'image/width': _int64_feature(width),
-        'image/colorspace': _bytes_feature(tf.compat.as_bytes(k_colorspace)),
-        'image/channels': _int64_feature(k_channels),
-        'image/class/label': _int64_feature(label),
-        'image/class/text': _bytes_feature(tf.compat.as_bytes(text)),
-        'image/format': _bytes_feature(tf.compat.as_bytes(k_image_format)),
-        'image/filename': _bytes_feature(tf.compat.as_bytes(os.path.basename(filename))),
-        'image/encoded': _bytes_feature(tf.compat.as_bytes(image_buffer))}))
+    example = tf.train.Example(
+        features=tf.train.Features(
+            feature={
+                'image/height': _int64_feature(height),
+                'image/width': _int64_feature(width),
+                'image/colorspace': _bytes_feature(tf.compat.as_bytes(k_colorspace)),
+                'image/channels': _int64_feature(k_channels+1),
+                'image/class/label': _int64_feature(label),
+                'image/class/text': _bytes_feature(tf.compat.as_bytes(text)),
+                'image/format': _bytes_feature(tf.compat.as_bytes(k_image_format)),
+                'image/filename': _bytes_feature(tf.compat.as_bytes(os.path.basename(filename))),
+                'image/encoded_ch1': _bytes_feature(tf.compat.as_bytes(image_buffer_ch1)),
+                'image/encoded_ch2': _bytes_feature(tf.compat.as_bytes(image_buffer_ch2))
+            }
+        )
+    )
     return example
 
 
@@ -115,18 +139,6 @@ class ImageCoder(object):
         return image
 
 
-def _is_tif(filename):
-    """Determine if a file contains a TIF format image.
-    Args:
-      filename: string, path of the image file.
-    Returns:
-      boolean indicating if the image is a TIF.
-    * Unused since we save a png version of the TIF images during the spec conversion
-    """
-    _, file_extension = os.path.splitext(filename)
-    return file_extension.lower() == '.tif'
-
-
 def _process_image(filename, coder):
     """Process a single image file.
     Args:
@@ -139,10 +151,17 @@ def _process_image(filename, coder):
     """
     # Read the image file.
     print(filename)
-    image_data = tf.gfile.FastGFile(filename, 'rb').read()
+    image_data_channel1 = tf.gfile.FastGFile(filename, 'rb').read()
+
+    a = os.path.basename(filename).split('.')
+    b = a[0] + '_IF'
+    c = b + '.' + a[1]
+    d = filename[:len(filename) - len(os.path.basename(filename))]
+    e = d + c
+    image_data_channel2 = tf.gfile.FastGFile(e, 'rb').read()
 
     # Decode the Grayscale PNG.
-    image = coder.decode_png(image_data)
+    image = coder.decode_png(image_data_channel1)
 
     # Check that image converted to Grayscale
     assert len(image.shape) == 3
@@ -150,7 +169,7 @@ def _process_image(filename, coder):
     width = image.shape[1]
     assert image.shape[2] == k_channels
 
-    return image_data, height, width
+    return image_data_channel1, image_data_channel2, height, width
 
 
 def _process_image_files_batch(coder, thread_index, ranges, name, filenames,
@@ -195,11 +214,9 @@ def _process_image_files_batch(coder, thread_index, ranges, name, filenames,
             label = labels[i]
             text = texts[i]
 
-            # print(filename,label,text)
+            image_buffer_ch1, image_buffer_ch2, height, width = _process_image(filename, coder)
 
-            image_buffer, height, width = _process_image(filename, coder)
-
-            example = _convert_to_example(filename, image_buffer, label,
+            example = _convert_to_example(filename, image_buffer_ch1, image_buffer_ch2, label,
                                           text, height, width)
             writer.write(example.SerializeToString())
             shard_counter += 1
@@ -265,31 +282,16 @@ def _process_image_files(name, filenames, texts, labels, num_shards):
 
 
 def _find_image_files(data_dir, labels_file):
-    """Build a list of all images files and labels in the data set.
-    Args:
-      data_dir: string, path to the root directory of images.
-        Assumes that the image data set resides in JPEG files located in
-        the following directory structure.
-          data_dir/dog/another-image.JPEG
-          data_dir/dog/my-image.jpg
-        where 'dog' is the label associated with these images.
-      labels_file: string, path to the labels file.
-        The list of valid labels are held in this file. Assumes that the file
-        contains entries as such:
-          dog
-          cat
-          flower
-        where each line corresponds to a label. We map each label contained in
-        the file to an integer starting with the integer 0 corresponding to the
-        label contained in the first line.
+    """
     Returns:
       filenames: list of strings; each string is a path to an image file.
       texts: list of strings; each string is the class, e.g. 'dog'
       labels: list of integer; each integer identifies the ground truth.
     """
     print('Determining list of input files and labels from %s.' % data_dir)
-    unique_labels = [l.strip() for l in tf.gfile.FastGFile(
-        labels_file, 'r').readlines()]
+    unique_labels = [
+        l.strip() for l in tf.gfile.FastGFile(labels_file, 'r').readlines()
+    ]
 
     labels = []
     filenames = []
@@ -300,7 +302,7 @@ def _find_image_files(data_dir, labels_file):
 
     # Construct the list of files and labels.
     for text in unique_labels:
-        file_path = '%s/%s/*' % (data_dir, text)
+        file_path = '%s/%s/*[^_IF].png' % (data_dir, text)
         matching_files = tf.gfile.Glob(file_path)
 
         labels.extend([label_index] * len(matching_files))
@@ -329,36 +331,47 @@ def _find_image_files(data_dir, labels_file):
 
 
 def _process_dataset(name, directory, num_shards, labels_file):
-    """Process a complete data set and save it as a TFRecord.
-    Args:
-      name: string, unique identifier specifying the data set.
-      directory: string, root path to the data set.
-      num_shards: integer number of shards for this data set.
-      labels_file: string, path to the labels file.
-    """
     filenames, texts, labels = _find_image_files(directory, labels_file)
     _process_image_files(name, filenames, texts, labels, num_shards)
 
 
 def main(unused_argv):
-    # assert not FLAGS.train_shards % FLAGS.num_threads, (
-    #    'Please make the FLAGS.num_threads commensurate with FLAGS.train_shards')
-    # assert not FLAGS.validation_shards % FLAGS.num_threads, (
-    #    'Please make the FLAGS.num_threads commensurate with '
-    #    'FLAGS.validation_shards')
-    # print('Saving results to %s' % FLAGS.output_directory)
 
     # Run it!
-    _process_dataset('fold1', FLAGS.fold1_dir,
-                     FLAGS.train_shards, FLAGS.labels_file)
-    _process_dataset('fold2', FLAGS.fold2_dir,
-                     FLAGS.train_shards, FLAGS.labels_file)
-    _process_dataset('fold3', FLAGS.fold3_dir,
-                     FLAGS.train_shards, FLAGS.labels_file)
-    _process_dataset('fold4', FLAGS.fold4_dir,
-                     FLAGS.train_shards, FLAGS.labels_file)
-    _process_dataset('fold5', FLAGS.fold5_dir,
-                     FLAGS.train_shards, FLAGS.labels_file)
+    _process_dataset(
+        name='fold1',
+        directory=FLAGS.fold1_dir,
+        num_shards=FLAGS.train_shards,
+        labels_file=FLAGS.labels_file
+    )
+
+    _process_dataset(
+        name='fold2',
+        directory=FLAGS.fold2_dir,
+        num_shards=FLAGS.train_shards,
+        labels_file=FLAGS.labels_file
+    )
+
+    _process_dataset(
+        name='fold3',
+        directory=FLAGS.fold3_dir,
+        num_shards=FLAGS.train_shards,
+        labels_file=FLAGS.labels_file
+    )
+
+    _process_dataset(
+        name='fold4',
+        directory=FLAGS.fold4_dir,
+        num_shards=FLAGS.train_shards,
+        labels_file=FLAGS.labels_file
+    )
+
+    _process_dataset(
+        name='fold5',
+        directory=FLAGS.fold5_dir,
+        num_shards=FLAGS.train_shards,
+        labels_file=FLAGS.labels_file
+    )
 
 
 if __name__ == '__main__':

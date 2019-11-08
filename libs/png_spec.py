@@ -1,6 +1,4 @@
 import numpy as np
-from PIL import PngImagePlugin
-import json
 from PIL import Image
 
 def scale_image(img, base_height, base_width):

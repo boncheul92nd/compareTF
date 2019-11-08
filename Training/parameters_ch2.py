@@ -4,12 +4,12 @@ import os
 # Pass some user input as flags
 FLAGS = None
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='res/Mag')
+parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='res/IF+H')
 parser.add_argument('--fold', type=int, help='fold used as test set for k-fold cross validation', default=1)
 parser.add_argument('--freqorientation', type=str, help='convolution over 1D or 2D. If 1D, then freq bins treated as channels. If 2D, then freq bins is the height of input', default='2D')
 parser.add_argument('--model', type=str, help='load the model to train', default='conv3')
-parser.add_argument('--freqbins', type=int, help='number of frequency bins in the spectrogram input', default=128)
-parser.add_argument('--num_frames', type=int, help='number of frames in the spectrogram input (must divisible by 3)', default=64)
+parser.add_argument('--freqbins', type=int, help='number of frequency bins in the spectrogram input', default=256)
+parser.add_argument('--num_frames', type=int, help='number of frames in the spectrogram input (must divisible by 3)', default=32)
 parser.add_argument('--batchsize', type=int, help='number of data records per training batch', default=100)
 parser.add_argument('--n_epochs', type=int, help='number of epochs to use for training', default=200)
 parser.add_argument('--l1channels', type=int, help='number of channels in the first convolutional layer', default=180)
@@ -51,7 +51,7 @@ if FRE_ORIENTATION == "1D":
     K_HEIGHT = 1
     print("Orientation is 1D, so setting NUM_CHANNELS to " + str(K_FREQBINS))
 elif FRE_ORIENTATION == "2D":
-    NUM_CHANNELS = 1            # Number of image channels
+    NUM_CHANNELS = 2            # Number of image channels
     K_HEIGHT = K_FREQBINS
     print("Orientation is 2D, so setting NUM_CHANNELS to " + str(1))
 

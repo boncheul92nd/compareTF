@@ -1,15 +1,15 @@
 import os
 os.environ["CUDA_DIVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 import tensorflow as tf
 import numpy as np
 import time
 from datetime import datetime
 import importlib
-from parameters import *
+from parameters_ch2 import *
 m = importlib.import_module(FLAGS.model) #import CNN model
-import utils.spectreader as spectreader
+import utils.spectreader_ch2 as spectreader_ch2
 
 
 # some utility functions
@@ -23,6 +23,7 @@ def time_taken(elapsed):
 def save_set(sets, name):
     """
         Writes the data array to .npy file. Can be loaded using load_set.
+
         :param sets: array to be saved. can take a list
         :param name: string to name the file. follow same order as in sets
     """
@@ -55,12 +56,18 @@ def getImage(fnames, freq_orientation, n_epochs=None):
             n_epochs: An integer(optional). Just fed to tf.string_input_producer(). Reads through all data n_epochs times before generating an OutOfRange error. None means read forever.
         :return:
     """
-    label, image = spectreader.getImage(fnames, n_epochs)
+    label, image_channel1, image_channel2 = spectreader_ch2.getImage(fnames, n_epochs)
 
     # No need to flatten - must just be explicit about shape so that shuffle_batch will work
-    image = tf.reshape(image,[K_FREQBINS,K_NUMFRAMES,NUM_CHANNELS])
+    image_channel1 = tf.reshape(image_channel1, [K_FREQBINS, K_NUMFRAMES, NUM_CHANNELS - 1])
+    image_channel2 = tf.reshape(image_channel2, [K_FREQBINS, K_NUMFRAMES, NUM_CHANNELS - 1])
+
+    image = tf.stack([image_channel1, image_channel2], axis=2)
+    image = tf.reshape(image, [K_FREQBINS, K_NUMFRAMES, NUM_CHANNELS])
+
     if freq_orientation is "1D":
-        image = tf.transpose(image, perm=[0, 3, 2, 1])  # Moves freqbins from height to channel dimension
+        image_channel1 = tf.transpose(image_channel1, perm=[0, 3, 2, 1])  # Moves freqbins from height to channel dimension
+        image_channel2 = tf.transpose(image_channel2, perm=[0, 3, 2, 1])
 
     # Re-define label as a "one-hot" vector, it will be [0, 1] or [1, 0] here.
     # This approach can easily be extended to more classes.
