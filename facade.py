@@ -7,17 +7,17 @@ from configs import configuration as config
 
 def main():
 
-    IF_H = PreProcessorTF(
+    PHASE_MEL_H = PreProcessorTF(
         srate=16000,
         dur=4,
         t_ax=128,
         f_ax=1024,
-        trans='stft',
-        ifreq=True,
-        out_dir=config.IF_H
+        trans='mel',
+        ifreq=False,
+        out_dir=config.PHASE_MEL_H
     )
-    IF_H.wav_to_spectrogram()
-    del IF_H
+    PHASE_MEL_H.wav_to_spectrogram()
+    del PHASE_MEL_H
 
 if __name__ == "__main__":
     main()

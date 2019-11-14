@@ -20,7 +20,7 @@ IF_MEL_H = RES_DIR + 'IF-Mel+H/'    # case 5
 PHASE_H = RES_DIR + 'Phase+H/'      # case 6
 
 PHASE_MEL = RES_DIR + 'Phase-Mel/'
-PHASE_MEL = RES_DIR + 'Phsae-Mel+H/'
+PHASE_MEL_H = RES_DIR + 'Phase-Mel+H/'
 
 
 OVERLAP_RATIO = 0.75
