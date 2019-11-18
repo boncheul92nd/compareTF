@@ -1,5 +1,5 @@
 import tensorflow as tf
-from parameters import *
+from parameters_ch2 import *
 
 if FRE_ORIENTATION == "2D":
     k_height = K_HEIGHT
