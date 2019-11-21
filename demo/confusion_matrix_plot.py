@@ -1,6 +1,6 @@
 import numpy as np
 
-A = np.load('./fold5_ch2.npy')
+A = np.load('./fold5_ch1.npy')
 target_names = [
     'Pig',
     'Glass breaking',

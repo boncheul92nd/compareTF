@@ -141,6 +141,7 @@ NUM_THREADS = 4
 foldlist = [1, 2, 3, 4, 5]
 max_acc = []
 max_epochs = []
+confusion_matrix_list = []
 
 start_time_long = time.monotonic()
 text_file = open(save_path + "/stft-double_v2.txt", "w")    # Save training data
@@ -272,6 +273,21 @@ for fold in foldlist:
         print(max_acc)
         print(max_epochs)
 
+        # TODO: Confusion matrix
+        v_test_batch, v_label_batch = sess.run([vimageBatch, vlabelBatch])
+        prediction = sess.run(prob, feed_dict={x: v_test_batch, y: v_label_batch, keep_prob: 1.})
+        y_truth = sess.run(tf.argmax(v_label_batch, axis=1))
+        y_hat = sess.run(tf.argmax(tf.one_hot(tf.arg_max(prediction, dimension=1), depth=50), axis=1))
+        conf_mtx = sess.run(tf.math.confusion_matrix(
+            labels=y_truth,
+            predictions=y_hat,
+            num_classes=50,
+            weights=None,
+            dtype=tf.dtypes.int32,
+            name=None
+        ))
+        confusion_matrix_list.append(conf_mtx)
+
     sess.close()
 writer.close()
 elapsed_time_long = time.monotonic() - start_time_long
@@ -280,3 +296,9 @@ text_file.write("Total time taken:")
 text_file.write(time_taken(elapsed_time_long))
 print("Total time taken:",time_taken(elapsed_time_long))
 text_file.close()
+
+np.save('./fold1_ch1.npy', confusion_matrix_list[0])
+np.save('./fold2_ch1.npy', confusion_matrix_list[1])
+np.save('./fold3_ch1.npy', confusion_matrix_list[2])
+np.save('./fold4_ch1.npy', confusion_matrix_list[3])
+np.save('./fold5_ch1.npy', confusion_matrix_list[4])
