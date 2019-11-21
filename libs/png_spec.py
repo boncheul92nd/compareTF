@@ -8,7 +8,7 @@ def scale_image(img, base_height, base_width):
         h_size = int((float(img.size[0]) * float(wpercent)))
         img = img.resize((h_size, base_height), Image.ANTIALIAS)
     else:
-        img = img.resize((base_height, base_width), Image.ANTIALIAS)
+        img = img.resize((base_width, base_height), Image.ANTIALIAS)
     return img
 
 
@@ -22,6 +22,5 @@ def logspec_to_png(out_img, fname, scale_height=None, scale_width=None):
     SC2 = 255 * (outimg - np.amin(outimg)) / shift
     savimg2 = Image.fromarray(np.flipud(SC2))
 
-    pngimg = savimg2.convert('L').transpose(Image.ROTATE_90)
-    pngimg = pngimg.transpose(Image.FLIP_LEFT_RIGHT)
+    pngimg = savimg2.convert('L')
     pngimg.save(fname, pnginfo=None)

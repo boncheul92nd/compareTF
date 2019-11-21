@@ -13,7 +13,7 @@ from libs.specgrams_helper import SpecgramsHelper
 
 class PreProcessor(object):
 
-    def __init__(self, srate, fft_size, fft_hop, scale_height, scale_width, trans, n_mels):
+    def __init__(self, srate, fft_size, fft_hop, scale_height, scale_width, trans, n_mels, out_dir):
         self._sample_rate = srate
         self._fft_size = fft_size
         self._fft_hop = fft_hop
@@ -22,12 +22,7 @@ class PreProcessor(object):
         self._transform = trans
         self._mel_filterbank = n_mels
         self._wav_dir = config.WAV_DIR
-        self._out_dir = config.RES_DIR + self._transform + \
-                        '_' + str(self._height) + 'x' + str(self._width) + \
-                        '_win' + str(self._fft_size) + \
-                        '_hop' + str(self._fft_hop) + \
-                        '_bank' + str(self._mel_filterbank) + \
-                        '_' + str(self._sample_rate//1000) + 'kHz'
+        self._out_dir = out_dir
 
     def _time_taken(self, elapsed):
         m, s = divmod(elapsed, 60)
@@ -80,7 +75,7 @@ class PreProcessor(object):
             hop_length=self._fft_hop,
             win_length=self._fft_size,
             window='hann',
-            center=True
+            center=False
         )
         magnitude = np.abs(D)
         phase = np.angle(D)
@@ -99,7 +94,7 @@ class PreProcessor(object):
             n_mels=self._mel_filterbank
         )
 
-        D = librosa.power_to_db(S=S, ref=np.max)
+        D = librosa.power_to_db(S=S**2, ref=np.max)
 
         return D
 
@@ -132,7 +127,7 @@ class PreProcessor(object):
 
                 # TODO: transform code that it's in below's comment box as class method
                 ########################################################################
-                png_dir = self._out_dir + '_png/' + fold + '/' + sub_dir
+                png_dir = self._out_dir + fold + '/' + sub_dir
                 try:
                     os.stat(png_dir)
                 except:

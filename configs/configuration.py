@@ -2,13 +2,14 @@ MAIN_DIR = '/home/201850854/compareTF'
 RES_DIR = MAIN_DIR + '/res/'
 WAV_DIR = MAIN_DIR + '/res/ESC-50-wav'
 
+NARROWBAND = RES_DIR + 'Narrowband/'
+WIDEBAND = RES_DIR + 'Wideband/'
 
 # Single channel input
 MAG = RES_DIR + 'Mag/'
 MAG_H = RES_DIR + 'Mag+H/'
 MAG_MEL = RES_DIR + 'Mag-Mel/'
 MAG_MEL_H = RES_DIR + 'Mag-Mel+H/'
-
 
 # Double channel input
 IF = RES_DIR + 'IF/'                # case 1
@@ -21,7 +22,6 @@ PHASE_H = RES_DIR + 'Phase+H/'      # case 6
 
 PHASE_MEL = RES_DIR + 'Phase-Mel/'
 PHASE_MEL_H = RES_DIR + 'Phase-Mel+H/'
-
 
 OVERLAP_RATIO = 0.75
 MEL_DOWNSCALE = 2
