@@ -15,7 +15,7 @@ k_colorspace = 'GrayScale'  # https://www.tensorflow.org/api_guides/python/image
 k_channels = 1  # saving songram as 2D GrayScale image for now - try 256 channels later
 k_image_format = 'PNG'  # also not used for sonogram TFRecord reading and writing
 
-tf.app.flags.DEFINE_string('main_dir', '../res/Mag-Mel+H',
+tf.app.flags.DEFINE_string('main_dir', '../res/Narrowband',
                            'Directory that holds all folds')
 
 tf.app.flags.DEFINE_string('fold1_dir', tf.app.flags.FLAGS.main_dir + '/1',

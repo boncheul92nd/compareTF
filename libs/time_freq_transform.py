@@ -82,21 +82,69 @@ class PreProcessor(object):
 
         return magnitude, phase
 
+    def _diff_tf(self, x, axis=1):
+        shape = x.get_shape()
+        if axis >= len(shape):
+            raise ValueError('Invalid axis index: %d for tensor with only %d axes.'
+                             % (axis, len(shape)))
+        begin_back = [0 for unused_s in range(len(shape))]
+        begin_front = [0 for unused_s in range(len(shape))]
+        begin_front[axis] = 1
+
+        size = shape.as_list()
+        size[axis] -= 1
+        slice_front = tf.slice(x, begin_front, size)
+        slice_back = tf.slice(x, begin_back, size)
+        d = slice_front - slice_back
+        return d
+
+    def _unwrap_tf(self, phase_angle, discont=np.pi, axis=-1):
+        dd = self._diff_tf(phase_angle, axis=axis)
+        ddmod = tf.mod(dd + np.pi, 2.0 * np.pi) - np.pi
+        idx = tf.logical_and(tf.equal(ddmod, -np.pi), tf.greater(dd, 0))
+        ddmod = tf.where(idx, tf.ones_like(ddmod) * np.pi, ddmod)
+        ph_correct = ddmod - dd
+        idx = tf.less(tf.abs(dd), discont)
+        ddmod = tf.where(idx, tf.zeros_like(ddmod), dd)
+        ph_cumsum = tf.cumsum(ph_correct, axis=axis)
+
+        shape = phase_angle.get_shape().as_list()
+        shape[axis] = 1
+        ph_cumsum = tf.concat([tf.zeros(shape, dtype=phase_angle.dtype), ph_cumsum], axis=axis)
+        unwrapped = phase_angle + ph_cumsum
+        return unwrapped
+
+    def _instantaneous_frequency_tf(self, phase_angle, time_axis=-2):
+        phase_unwrapped = self._unwrap_tf(phase_angle, axis=time_axis)
+        dphase = self._diff_tf(phase_unwrapped, axis=time_axis)
+
+        # Add an initial phase to dphase
+        size = phase_unwrapped.get_shape().as_list()
+        size[time_axis] = 1
+        begin = [0 for unused_s in size]
+        phase_slice = tf.slice(phase_unwrapped, begin, size)
+        dphase = tf.concat([phase_slice, dphase], axis=time_axis) / np.pi
+        return dphase
+
     def _wav_to_mel(self, fname):
 
-        audio_data, sample_rate = self._load_audio(fname)
+        _, phase = self._wav_to_stft(fname=fname)
+        audio_data, _ = self._load_audio(fname)
 
-        S = librosa.feature.melspectrogram(
+        mag = librosa.feature.melspectrogram(
             y=audio_data,
-            sr=sample_rate,
+            sr=self._sample_rate,
             n_fft=self._fft_size,
             hop_length=self._fft_hop,
             n_mels=self._mel_filterbank
         )
+        mag = librosa.power_to_db(S=mag, ref=np.max)
 
-        D = librosa.power_to_db(S=S**2, ref=np.max)
+        tensor_phase = tf.convert_to_tensor(phase)
+        tensor_instntfreq = self._instantaneous_frequency_tf(tensor_phase)
+        instantfreq = tensor_instntfreq.numpy()
 
-        return D
+        return mag, instantfreq
 
     def wav_to_spectrogram(self):
 
@@ -114,7 +162,7 @@ class PreProcessor(object):
                     D = self._wav_to_stft(fname=full_paths[idx])
 
                 elif self._transform == 'mel':
-                    D = self._wav_to_mel(fname=full_paths[idx])
+                    mag, instantfreq = self._wav_to_mel(fname=full_paths[idx])
                 elif self._transform == 'cqt':
                     # TODO: CQT method
                     break
@@ -134,11 +182,18 @@ class PreProcessor(object):
                     os.makedirs(png_dir)
 
                 png_spec.logspec_to_png(
-                    out_img=D,
+                    out_img=mag,
                     fname=png_dir + '/' + os.path.splitext(fname)[0] + '.png',
                     scale_height=self._height,
                     scale_width=self._width
                 )
+
+                # png_spec.logspec_to_png(
+                #     out_img=instantfreq,
+                #     fname=png_dir + '/' + os.path.splitext(fname)[0] + '_IF.png',
+                #     scale_height=self._height,
+                #     scale_width=self._width
+                # )
                 ########################################################################
 
                 print(str(count) + ": " + sub_dir + "/" + os.path.splitext(fname)[0])
