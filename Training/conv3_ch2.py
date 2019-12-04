@@ -59,7 +59,7 @@ def conv_net(x, weights, biases, dropout):
 # Store layers weight & bias
 weights = {
     # 3x3 conv, 1 or freqbin input, L1_CHANNELS outputs
-    'wc1': tf.Variable(tf.truncated_normal([k_conv_rows, k_conv_rows, k_input_channels, L1_CHANNELS], stddev=0.1), name='wc1'),
+    'wc1': tf.Variable(tf.truncated_normal([k_conv_rows, k_conv_cols, k_input_channels, L1_CHANNELS], stddev=0.1), name='wc1'),
 
     # Fully connected, (37//4=10)*(50//4=13)*L1_CHANNELS inputs, 1,200 outputs
     'wd1': tf.Variable(tf.truncated_normal([k_downsampled_height * k_downsampled_width * L1_CHANNELS, FC_SIZE], stddev=0.1), name='wd1'),

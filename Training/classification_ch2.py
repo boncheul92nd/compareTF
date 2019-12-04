@@ -107,7 +107,7 @@ pred = m.conv_net(x, m.weights, m.biases, keep_prob)
 
 # L2 regularization
 lossL2 = tf.add_n([tf.nn.l2_loss(val) for name, val in m.weights.items()]) * beta   # L2 reg on all weight layers
-lossL2_onlyfull = tf.add_n([tf.nn.l2_loss(m.weights['wd1']), tf.nn.l2_loss(m.weights['wout'])]) * beta  # L2 reg on dense layers
+lossL2_onlyfull = tf.add_n([tf.nn.l2_loss(m.weights['w_fc1']), tf.nn.l2_loss(m.weights['w_fc2'])]) * beta  # L2 reg on dense layers
 
 # Op for calculating the loss
 with tf.name_scope("cross_ent"):
