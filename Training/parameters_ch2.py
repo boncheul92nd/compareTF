@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('--datafolder', type=str, help='basename of folder where TFRecords are kept', default='res/IF-Mel')
 parser.add_argument('--fold', type=int, help='fold used as test set for k-fold cross validation', default=1)
 parser.add_argument('--freqorientation', type=str, help='convolution over 1D or 2D. If 1D, then freq bins treated as channels. If 2D, then freq bins is the height of input', default='2D')
-parser.add_argument('--model', type=str, help='load the model to train', default='conv5_ch2')
+parser.add_argument('--model', type=str, help='load the model to train', default='model_A_unit4')
 parser.add_argument('--freqbins', type=int, help='number of frequency bins in the spectrogram input', default=64)
 parser.add_argument('--num_frames', type=int, help='number of frames in the spectrogram input (must divisible by 3)', default=64)
 parser.add_argument('--batchsize', type=int, help='number of data records per training batch', default=100)
