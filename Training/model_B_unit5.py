@@ -22,7 +22,10 @@ weights = {
     'w_conv7': tf.get_variable(initializer=initializer, shape=[3, 3, 128, 256], name='wc7'),
     'w_conv8': tf.get_variable(initializer=initializer, shape=[3, 3, 256, 256], name='wc8'),
 
-    'w_fc1': tf.get_variable(initializer=initializer, shape=[4 * 4 * 256, 384], name='wf1'),
+    'w_conv9': tf.get_variable(initializer=initializer, shape=[3, 3, 256, 512], name='wc9'),
+    'w_conv10': tf.get_variable(initializer=initializer, shape=[3, 3, 512, 512], name='wc10'),
+
+    'w_fc1': tf.get_variable(initializer=initializer, shape=[4 * 4 * 512, 384], name='wf1'),
     'w_fc2': tf.get_variable(initializer=initializer, shape=[384, 50], name='wf2')
 }
 
@@ -39,6 +42,9 @@ biases = {
 
     'b_conv7': tf.Variable(tf.constant(0.1, shape=[256]), name='bc7'),
     'b_conv8': tf.Variable(tf.constant(0.1, shape=[256]), name='bc8'),
+
+    'b_conv9': tf.Variable(tf.constant(0.1, shape=[512]), name='bc9'),
+    'b_conv10': tf.Variable(tf.constant(0.1, shape=[512]), name='bc10'),
 
     'b_fc1': tf.Variable(tf.constant(0.1, shape=[384]), name='bf1'),
     'b_fc2': tf.Variable(tf.constant(0.1, shape=[50]), name='bf2')
@@ -67,12 +73,15 @@ def conv_net(x, weights, biases, dropout):
 
     h_conv5 = conv2d(h_conv4, weights['w_conv5'], biases['b_conv5'])
     h_conv6 = conv2d(h_conv5, weights['w_conv6'], biases['b_conv6'])
-    h_pool6 = downscale(h_conv6)
 
-    h_conv7 = conv2d(h_pool6, weights['w_conv7'], biases['b_conv7'])
+    h_conv7 = conv2d(h_conv6, weights['w_conv7'], biases['b_conv7'])
     h_conv8 = conv2d(h_conv7, weights['w_conv8'], biases['b_conv8'])
+    h_pool8 = downscale(h_conv8)
 
-    h_conv8_flat = tf.reshape(h_conv8, [-1, 4 * 4 * 256])
+    h_conv9 = conv2d(h_pool8, weights['w_conv9'], biases['b_conv9'])
+    h_conv10 = conv2d(h_conv9, weights['w_conv10'], biases['b_conv10'])
+
+    h_conv8_flat = tf.reshape(h_conv10, [-1, 4 * 4 * 512])
 
     h_fc1 = tf.nn.leaky_relu(tf.add(tf.matmul(h_conv8_flat, weights['w_fc1']), biases['b_fc1']))
     h_fc1_drop = tf.nn.dropout(h_fc1, dropout)
