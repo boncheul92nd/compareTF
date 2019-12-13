@@ -52,7 +52,7 @@ def conv2d(x, W, b):
 
 
 def downscale(x):
-    return tf.nn.avg_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='VALID')
+    return tf.nn.max_pool(x, ksize=[1, 16, 16, 1], strides=[1, 16, 16, 1], padding='SAME')
 
 
 def conv_net(x, weights, biases, dropout):
@@ -61,21 +61,18 @@ def conv_net(x, weights, biases, dropout):
 
     h_conv1 = conv2d(h_conv0, weights['w_conv1'], biases['b_conv1'])
     h_conv2 = conv2d(h_conv1, weights['w_conv2'], biases['b_conv2'])
-    h_pool2 = downscale(h_conv2)
 
-    h_conv3 = conv2d(h_pool2, weights['w_conv3'], biases['b_conv3'])
+    h_conv3 = conv2d(h_conv2, weights['w_conv3'], biases['b_conv3'])
     h_conv4 = conv2d(h_conv3, weights['w_conv4'], biases['b_conv4'])
     h_pool4 = downscale(h_conv4)
 
     h_conv5 = conv2d(h_pool4, weights['w_conv5'], biases['b_conv5'])
     h_conv6 = conv2d(h_conv5, weights['w_conv6'], biases['b_conv6'])
-    h_pool6 = downscale(h_conv6)
 
-    h_conv7 = conv2d(h_pool6, weights['w_conv7'], biases['b_conv7'])
+    h_conv7 = conv2d(h_conv6, weights['w_conv7'], biases['b_conv7'])
     h_conv8 = conv2d(h_conv7, weights['w_conv8'], biases['b_conv8'])
-    h_pool8 = downscale(h_conv8)
 
-    h_conv8_flat = tf.reshape(h_pool8, [-1, 4 * 4 * 256])
+    h_conv8_flat = tf.reshape(h_conv8, [-1, 4 * 4 * 256])
 
     h_fc1 = tf.nn.leaky_relu(tf.add(tf.matmul(h_conv8_flat, weights['w_fc1']), biases['b_fc1']))
     h_fc1_drop = tf.nn.dropout(h_fc1, dropout)
